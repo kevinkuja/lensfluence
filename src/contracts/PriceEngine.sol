@@ -102,7 +102,7 @@ contract PriceEngine is Ownable, IPriceEngine {
     require(artists.length > 0, 'Empty arrays');
 
     uint256 totalRequiredGHO = 0;
-    uint256[] memory successIndices = new uint256[](artists.length);
+    uint256[] memory successIndexes = new uint256[](artists.length);
     uint256[] memory newPrices = new uint256[](artists.length);
 
     // Step 1: Calculate liquidity released by artists with decreasing metrics
@@ -118,18 +118,18 @@ contract PriceEngine is Ownable, IPriceEngine {
       uint256 prevPrice = artistPrices[artist] == 0 ? 1e18 : artistPrices[artist];
 
       // Calculate Success Index (percentage change in metric)
-      successIndices[i] = newMetric.mulDiv(1e18, prevMetric);
-      successIndices[i] = successIndices[i] > MAX_SI ? MAX_SI : successIndices[i];
+      successIndexes[i] = newMetric.mulDiv(1e18, prevMetric);
+      successIndexes[i] = successIndexes[i] > MAX_SI ? MAX_SI : successIndexes[i];
 
       // Handle decreasing metrics (release liquidity)
-      if (successIndices[i] < 1e18 && newMetric < prevMetric) {
+      if (successIndexes[i] < 1e18 && newMetric < prevMetric) {
         // Percentage drop in metric
         uint256 metricDropPercent = ((prevMetric - newMetric) * 1e18) / prevMetric;
         // Liquidity released is proportional to the metric drop
         uint256 tokenValue = prevPrice.mulDiv(supply, 1e18);
         uint256 liquidityReleased = tokenValue.mulDiv(metricDropPercent, 1e18);
         releasedLiquidity += liquidityReleased;
-        newPrices[i] = prevPrice.mulDiv(successIndices[i], 1e18); // Unscaled price drop
+        newPrices[i] = prevPrice.mulDiv(successIndexes[i], 1e18); // Unscaled price drop
       }
     }
 
@@ -140,14 +140,14 @@ contract PriceEngine is Ownable, IPriceEngine {
       uint256 prevMetric = prevMetrics[artist] == 0 ? 1 : prevMetrics[artist];
       uint256 prevPrice = artistPrices[artist] == 0 ? 1e18 : artistPrices[artist];
 
-      if (successIndices[i] > 1e18 && newMetric > prevMetric) {
+      if (successIndexes[i] > 1e18 && newMetric > prevMetric) {
         address token = factory.artistToToken(artist);
         uint256 supply = IERC20(token).totalSupply();
-        newPrices[i] = prevPrice.mulDiv(successIndices[i], 1e18); // Tentative price
+        newPrices[i] = prevPrice.mulDiv(successIndexes[i], 1e18); // Tentative price
         totalRequiredGHO += (newPrices[i] - prevPrice).mulDiv(supply, 1e18);
-      } else if (successIndices[i] >= 1e18) {
+      } else if (successIndexes[i] >= 1e18) {
         // For no change or increasing metrics without prior price set
-        newPrices[i] = successIndices[i] < 1e18 ? newPrices[i] : prevPrice;
+        newPrices[i] = successIndexes[i] < 1e18 ? newPrices[i] : prevPrice;
       }
     }
 
@@ -170,11 +170,11 @@ contract PriceEngine is Ownable, IPriceEngine {
       uint256 prevPrice = artistPrices[artist] == 0 ? 1e18 : artistPrices[artist];
 
       // Apply scaling for increasing metrics
-      if (successIndices[i] > 1e18 && newMetric > prevMetric) {
+      if (successIndexes[i] > 1e18 && newMetric > prevMetric) {
         if (scalingFactor == 0) {
           newPrices[i] = prevPrice; // No liquidity, no price increase
         } else {
-          newPrices[i] = prevPrice.mulDiv(successIndices[i].mulDiv(scalingFactor, 1e18), 1e18);
+          newPrices[i] = prevPrice.mulDiv(successIndexes[i].mulDiv(scalingFactor, 1e18), 1e18);
         }
       }
 
