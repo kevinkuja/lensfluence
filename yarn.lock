@@ -206,6 +206,10 @@
   version "5.1.0"
   resolved "https://codeload.github.com/OpenZeppelin/openzeppelin-contracts/tar.gz/bcdfa848a6abb37216df861573d9576636e77824"
 
+"@prb/test@github:PaulRBerg/prb-test#8d76ad63d1bfa0b16bb880cfe4620a9e7e6aaa19":
+  version "0.6.1"
+  resolved "https://codeload.github.com/PaulRBerg/prb-test/tar.gz/8d76ad63d1bfa0b16bb880cfe4620a9e7e6aaa19"
+
 "@solidity-parser/parser@^0.19.0":
   version "0.19.0"
   resolved "https://registry.yarnpkg.com/@solidity-parser/parser/-/parser-0.19.0.tgz#37a8983b2725af9b14ff8c4a475fa0e98d773c3f"
@@ -520,6 +524,10 @@ dot-prop@^5.1.0:
   dependencies:
     is-obj "^2.0.0"
 
+"ds-test@github:dapphub/ds-test":
+  version "1.0.0"
+  resolved "https://codeload.github.com/dapphub/ds-test/tar.gz/e282159d5170298eb2455a6c05280ab5a73a4ef0"
+
 emoji-regex@^10.3.0:
   version "10.3.0"
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-10.3.0.tgz#76998b9268409eb3dae3de989254d456e70cfe23"
@@ -621,9 +629,9 @@ find-up@^7.0.0:
     path-exists "^5.0.0"
     unicorn-magic "^0.1.0"
 
-"forge-std@github:foundry-rs/forge-std#1.9.2":
-  version "1.9.2"
-  resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/1714bee72e286e73f76e320d110e0eaf5c4e649d"
+"forge-std@github:foundry-rs/forge-std#6853b9ec7df5dc0c213b05ae67785ad4f4baa0ea":
+  version "1.9.6"
+  resolved "https://codeload.github.com/foundry-rs/forge-std/tar.gz/6853b9ec7df5dc0c213b05ae67785ad4f4baa0ea"
 
 fs.realpath@^1.0.0:
   version "1.0.0"

@@ -1,85 +1,86 @@
-// SPDX-License-License: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import '../../src/contracts/ArtistToken.sol';
 import '../../src/contracts/ArtistTokenFactory.sol';
+
+import '../../src/contracts/MockYieldPlatform.sol';
 import '../../src/contracts/PriceEngine.sol';
-
-import '../../src/mocks/MockFollowNFT.sol';
-import '../../src/mocks/MockLensHub.sol';
-import '../../src/mocks/MockOracle.sol';
-
-import '@openzeppelin/contracts/access/Ownable.sol';
 import 'forge-std/Test.sol';
 
+/**
+ * @title ArtistTokenFactoryTest
+ * @dev Test suite for the ArtistTokenFactory contract.
+ */
 contract ArtistTokenFactoryTest is Test {
   ArtistTokenFactory factory;
-  MockLensHub lensHub;
-  MockFollowNFT followNFT;
-  MockOracle oracle;
   PriceEngine priceEngine;
+  MockYieldPlatform yieldPlatform;
 
   address owner = address(0x1);
-  address nonOwner = address(0x2);
-  uint256 profileId = 1;
+  address artist = address(0x2);
 
+  /**
+   * @dev Sets up the test environment.
+   */
   function setUp() public {
     vm.deal(owner, 1000 ether);
+    vm.deal(artist, 1000 ether);
 
-    lensHub = new MockLensHub();
-    followNFT = new MockFollowNFT();
-    oracle = new MockOracle();
+    yieldPlatform = new MockYieldPlatform(owner);
+    priceEngine = new PriceEngine(address(yieldPlatform), owner);
+    factory = new ArtistTokenFactory(owner);
 
-    lensHub.setProfile(profileId, owner);
-    lensHub.setFollowNFT(profileId, address(followNFT));
-    lensHub.setPubCount(profileId, 10);
-    followNFT.setTotalSupply(100);
-    oracle.setMetrics(profileId, 1000, 50, 500, 20);
+    vm.prank(owner);
+    priceEngine.setFactory(address(factory));
 
-    priceEngine = new PriceEngine(address(lensHub), address(oracle), address(0), owner);
-    factory = new ArtistTokenFactory(address(lensHub), owner);
+    vm.prank(owner);
+    priceEngine.depositGHO{value: 100 ether}();
   }
 
+  /**
+   * @dev Tests creating an ArtistToken.
+   */
   function testCreateArtistToken() public {
     vm.prank(owner);
-    address token = factory.createArtistToken(profileId, 'Test Token', 'TST', 1_000_000, address(priceEngine));
+    address tokenAddr = factory.createArtistToken('Test Token', 'TST', 1_000_000, address(priceEngine), artist);
 
-    assertTrue(token != address(0));
-    assertEq(factory.profileIdToToken(profileId), token);
+    assertEq(factory.artistToToken(artist), tokenAddr);
 
-    ArtistToken artistToken = ArtistToken(token);
-    assertEq(artistToken.name(), 'Test Token');
-    assertEq(artistToken.symbol(), 'TST');
-    assertEq(artistToken.maxSupply(), 1_000_000);
-    assertEq(artistToken.profileId(), profileId);
-    assertEq(artistToken.owner(), owner);
+    ArtistToken token = ArtistToken(tokenAddr);
+    assertEq(token.name(), 'Test Token');
+    assertEq(token.symbol(), 'TST');
+    assertEq(token.maxSupply(), 1_000_000);
+    assertEq(token.artist(), artist);
   }
 
-  function testCreateArtistTokenInvalidProfile() public {
-    uint256 invalidProfileId = 2;
+  /**
+   * @dev Tests creating a token with invalid supply.
+   */
+  function testCreateArtistTokenInvalidSupply() public {
     vm.prank(owner);
-    vm.expectRevert('Invalid Lens profile');
-    factory.createArtistToken(invalidProfileId, 'Test Token', 'TST', 1_000_000, address(priceEngine));
+    vm.expectRevert('Supply too high');
+    factory.createArtistToken('Test Token', 'TST', 2_000_000, address(priceEngine), artist);
   }
 
+  /**
+   * @dev Tests creating a token for an artist that already has one.
+   */
   function testCreateArtistTokenAlreadyExists() public {
     vm.prank(owner);
-    factory.createArtistToken(profileId, 'Test Token', 'TST', 1_000_000, address(priceEngine));
+    factory.createArtistToken('Test Token', 'TST', 1_000_000, address(priceEngine), artist);
 
     vm.prank(owner);
     vm.expectRevert('Token already exists');
-    factory.createArtistToken(profileId, 'Test Token 2', 'TST2', 1_000_000, address(priceEngine));
+    factory.createArtistToken('Test Token 2', 'TST2', 1_000_000, address(priceEngine), artist);
   }
 
-  function testCreateArtistTokenSupplyTooHigh() public {
+  /**
+   * @dev Tests creating a token with an invalid artist address.
+   */
+  function testCreateArtistTokenInvalidArtist() public {
     vm.prank(owner);
-    vm.expectRevert('Supply too high');
-    factory.createArtistToken(profileId, 'Test Token', 'TST', 1_000_001, address(priceEngine));
-  }
-
-  function testCreateArtistTokenNonOwner() public {
-    vm.prank(nonOwner);
-    vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, nonOwner));
-    factory.createArtistToken(profileId, 'Test Token', 'TST', 1_000_000, address(priceEngine));
+    vm.expectRevert('Invalid artist address');
+    factory.createArtistToken('Test Token', 'TST', 1_000_000, address(priceEngine), address(0));
   }
 }
