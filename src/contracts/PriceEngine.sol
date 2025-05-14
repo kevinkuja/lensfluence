@@ -6,9 +6,9 @@ import {IArtistTokenFactory} from '../interfaces/IArtistTokenFactory.sol';
 
 import {IMockYieldPlatform} from '../interfaces/IMockYieldPlatform.sol';
 import {IPriceEngine} from '../interfaces/IPriceEngine.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/utils/math/Math.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Math} from '@openzeppelin/contracts/utils/math/Math.sol';
 
 import {console} from 'forge-std/console.sol';
 
@@ -53,17 +53,17 @@ contract PriceEngine is Ownable, IPriceEngine {
   /**
    * @dev Deposits GHO into the yield platform and updates the treasury.
    */
-  function depositGHO() external payable override {
-    yieldPlatform.depositGHO{value: msg.value}();
-    treasuryGHO += msg.value;
+  function deposit(uint256 amount) external override {
+    yieldPlatform.deposit(amount);
+    treasuryGHO += amount;
   }
 
   /**
    * @dev Withdraws GHO from the yield platform and updates the treasury.
    * @param amount The amount to withdraw (wei).
    */
-  function withdrawGHO(uint256 amount) external override onlyOwner {
-    yieldPlatform.withdrawGHO(amount);
+  function withdraw(uint256 amount) external override onlyOwner {
+    yieldPlatform.withdraw(amount);
     treasuryGHO -= amount;
   }
 

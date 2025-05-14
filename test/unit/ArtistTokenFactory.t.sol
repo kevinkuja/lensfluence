@@ -35,7 +35,7 @@ contract ArtistTokenFactoryTest is Test {
     priceEngine.setFactory(address(factory));
 
     vm.prank(owner);
-    priceEngine.depositGHO{value: 100 ether}();
+    priceEngine.deposit(100 ether);
   }
 
   /**

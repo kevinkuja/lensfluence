@@ -42,7 +42,7 @@ contract PriceEngineTest is Test {
     priceEngine.setFactory(address(factory));
 
     vm.prank(owner);
-    priceEngine.depositGHO{value: 100 ether}();
+    priceEngine.deposit(100 ether);
 
     vm.startPrank(owner);
     factory.createArtistToken('Test Token 1', 'TST1', 1_000_000, address(priceEngine), artist1);
@@ -67,7 +67,7 @@ contract PriceEngineTest is Test {
   /**
    * @dev Tests retrieving the yield from the platform.
    */
-  function testGetYield() public {
+  function testGetYield() public view {
     uint256 yield = yieldPlatform.getYield(address(priceEngine));
     assertEq(yield, 10 ether);
   }
@@ -85,7 +85,7 @@ contract PriceEngineTest is Test {
     uint256 cost = amount.mulDiv(initialPrice, 1e18);
 
     vm.prank(user);
-    ArtistToken(token).mint{value: cost}(user, amount);
+    ArtistToken(token).mint(user, amount);
 
     address[] memory artists = new address[](1);
     artists[0] = artist1;
@@ -120,8 +120,8 @@ contract PriceEngineTest is Test {
     console.log('cost', cost);
     console.log('treasury', priceEngine.getTreasury());
     deal(address(this), cost * 10);
-    ArtistToken(token1).mint{value: cost}(user, amount);
-    ArtistToken(token2).mint{value: cost}(user, amount);
+    ArtistToken(token1).mint(user, amount);
+    ArtistToken(token2).mint(user, amount);
     console.log('treasury after mint', priceEngine.getTreasury());
     console.log('releasedLiquidity after mint', priceEngine.getReleasedLiquidity());
 
@@ -159,8 +159,8 @@ contract PriceEngineTest is Test {
     uint256 pricePerToken = priceEngine.getPrice(artist1);
     uint256 cost = amount.mulDiv(pricePerToken, 1e18);
     vm.prank(user);
-    ArtistToken(token1).mint{value: cost}(user, amount);
-    ArtistToken(token2).mint{value: cost}(user, amount);
+    ArtistToken(token1).mint(user, amount);
+    ArtistToken(token2).mint(user, amount);
 
     uint256 initialPrice1 = priceEngine.getPrice(artist1);
     uint256 initialPrice2 = priceEngine.getPrice(artist2);

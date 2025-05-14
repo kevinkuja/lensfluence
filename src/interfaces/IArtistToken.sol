@@ -11,7 +11,7 @@ interface IArtistToken {
    * @param to The recipient's address.
    * @param amount The number of tokens to mint.
    */
-  function mint(address to, uint256 amount) external payable;
+  function mint(address to, uint256 amount) external;
 
   /**
    * @dev Burns tokens from a holder.

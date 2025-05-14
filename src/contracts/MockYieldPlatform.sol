@@ -1,14 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {WGRASS} from '../constants.sol';
 import {IMockYieldPlatform} from '../interfaces/IMockYieldPlatform.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
-
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 /**
  * @title MockYieldPlatform
  * @dev Mock contract simulating a yield-generating platform for GHO.
  */
+
 contract MockYieldPlatform is Ownable, IMockYieldPlatform {
+  using SafeERC20 for IERC20;
+
   mapping(address => uint256) public balances; // Deposited balances
   mapping(address => uint256) public depositedGHO; // Initial deposits
 
@@ -21,19 +26,19 @@ contract MockYieldPlatform is Ownable, IMockYieldPlatform {
   /**
    * @dev Deposits GHO into the platform.
    */
-  function depositGHO() external payable override {
-    depositedGHO[msg.sender] = depositedGHO[msg.sender] + msg.value;
-    balances[msg.sender] = balances[msg.sender] + msg.value;
+  function deposit(uint256 amount) external override {
+    depositedGHO[msg.sender] = depositedGHO[msg.sender] + amount;
+    balances[msg.sender] = balances[msg.sender] + amount;
   }
 
   /**
    * @dev Withdraws GHO from the platform.
    * @param amount The amount to withdraw (wei).
    */
-  function withdrawGHO(uint256 amount) external override {
+  function withdraw(uint256 amount) external override {
     require(balances[msg.sender] >= amount, 'Insufficient balance');
     balances[msg.sender] = balances[msg.sender] - amount;
-    payable(msg.sender).transfer(amount);
+    IERC20(WGRASS).safeTransfer(msg.sender, amount);
   }
 
   /**
