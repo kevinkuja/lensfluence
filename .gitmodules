@@ -1,0 +1,3 @@
+[submodule "lib/lens-v3"]
+	path = lib/lens-v3
+	url = https://github.com/lens-protocol/lens-v3

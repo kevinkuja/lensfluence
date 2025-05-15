@@ -1,5 +1,6 @@
 forge-std/=node_modules/forge-std/src
 halmos-cheatcodes=node_modules/halmos-cheatcodes
 
-contracts/=src/contracts
+contracts/=lib/lens-v3/contracts
+lens-v3/=lib/lens-v3/contracts
 interfaces/=src/interfaces
