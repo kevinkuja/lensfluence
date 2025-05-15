@@ -2,6 +2,7 @@
 // Copyright (C) 2024 Lens Labs. All Rights Reserved.
 pragma solidity ^0.8.26;
 
+import {ACTION_HUB} from '../../constants.sol';
 import {ArtistToken} from '../ArtistToken.sol';
 import {KeyValue} from 'lib/lens-v3/contracts/core/types/Types.sol';
 
@@ -10,7 +11,7 @@ import {BaseAccountAction} from 'lib/lens-v3/contracts/actions/account/base/Base
 import {Errors} from 'lib/lens-v3/contracts/core/types/Errors.sol';
 
 contract BuyArtistTokenAction is BaseAccountAction {
-  constructor(address actionHub) BaseAccountAction(actionHub) {}
+  constructor() BaseAccountAction(ACTION_HUB) {}
 
   function _configure(
     address originalMsgSender,
