@@ -36,5 +36,4 @@ runs = 1000
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC}"
 sepolia = "${SEPOLIA_RPC}"
-zksync = "https://rpc.testnet.lens.xyz"
-
+lens = "https://rpc.testnet.lens.xyz"

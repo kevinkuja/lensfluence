@@ -6,28 +6,26 @@ import {KeyValue} from '../../types/Types.sol';
 import {ArtistToken} from '../ArtistToken.sol';
 import {BaseAction} from './BaseAction.sol';
 
-abstract contract BasePostAction is BaseAction {
-  ArtistToken public immutable artistToken;
+ contract BuyArtistTokenAction {
 
-  constructor(address actionHub, address _artistToken) BaseAction(actionHub) {
-    artistToken = ArtistToken(_artistToken);
-  }
+    constructor() {
+    }
 
   function configure(
     address originalMsgSender,
     KeyValue[] calldata params
-  ) external onlyActionHub returns (bytes memory) {
+  ) external  returns (bytes memory) {
     return _configure(originalMsgSender, params);
   }
 
-  function execute(address originalMsgSender, KeyValue[] calldata params) external onlyActionHub returns (bytes memory) {
+  function execute(address originalMsgSender, KeyValue[] calldata params) external  returns (bytes memory) {
     return _execute(originalMsgSender, params);
   }
 
   function setDisabled(
     address originalMsgSender,
     KeyValue[] calldata params
-  ) external onlyActionHub returns (bytes memory) {
+  ) external  returns (bytes memory) {
     return _setDisabled(originalMsgSender, params);
   }
 
@@ -35,11 +33,11 @@ abstract contract BasePostAction is BaseAction {
     address originalMsgSender,
     KeyValue[] calldata /* params */
   ) internal virtual returns (bytes memory) {
-    return _configureUniversalAction(originalMsgSender);
   }
 
   function _execute(address originalMsgSender, KeyValue[] calldata params) internal virtual returns (bytes memory) {
-    uint256 amount = abi.decode(params[0].value, (uint256));
+    address artistToken = abi.decode(params[0].value, (address));
+    uint256 amount = abi.decode(params[1].value, (uint256));
 
     ArtistToken(artistToken).mint(originalMsgSender, amount);
   }
