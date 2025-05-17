@@ -2,14 +2,14 @@
 // Copyright (C) 2024 Lens Labs. All Rights Reserved.
 pragma solidity ^0.8.26;
 
-import {ACTION_HUB} from '../../constants.sol';
+import {ACTION_HUB_ADDRESS_MAINNET} from '../../constants.sol';
 import {ArtistToken} from '../ArtistToken.sol';
 import {BaseAccountAction} from 'lib/lens-v3/contracts/actions/account/base/BaseAccountAction.sol';
 import {Errors} from 'lib/lens-v3/contracts/core/types/Errors.sol';
 import {KeyValue} from 'lib/lens-v3/contracts/core/types/Types.sol';
 
 contract SellArtistTokenAction is BaseAccountAction {
-  constructor() BaseAccountAction(ACTION_HUB) {}
+  constructor() BaseAccountAction(ACTION_HUB_ADDRESS_MAINNET) {}
 
   function _execute(
     address originalMsgSender,
@@ -37,6 +37,6 @@ contract SellArtistTokenAction is BaseAccountAction {
     address account,
     KeyValue[] calldata params
   ) internal override returns (bytes memory) {
-    return _configureUniversalAction(originalMsgSender);
+    return '';
   }
 }
