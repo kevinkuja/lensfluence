@@ -9,13 +9,13 @@ interface IMockYieldPlatform {
   /**
    * @dev Deposits GHO into the platform.
    */
-  function deposit(uint256 amount) external;
+  function depositGHO() external payable;
 
   /**
    * @dev Withdraws GHO from the platform.
    * @param amount The amount of GHO to withdraw (wei).
    */
-  function withdraw(uint256 amount) external;
+  function withdrawGHO(uint256 amount) external;
 
   /**
    * @dev Returns the deposited balance for an account.

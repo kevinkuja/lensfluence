@@ -9,13 +9,13 @@ interface IPriceEngine {
   /**
    * @dev Deposits GHO into the yield platform.
    */
-  function deposit(uint256 amount) external;
+  function depositGHO() external payable;
 
   /**
    * @dev Withdraws GHO from the yield platform.
    * @param amount The amount of GHO to withdraw.
    */
-  function withdraw(uint256 amount) external;
+  function withdrawGHO(uint256 amount) external;
 
   /**
    * @dev Returns the mint price for an artist's token.

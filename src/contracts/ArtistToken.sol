@@ -1,22 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {WGRASS} from '../constants.sol';
 import {IArtistToken} from '../interfaces/IArtistToken.sol';
 import {IPriceEngine} from '../interfaces/IPriceEngine.sol';
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
-import {ERC20, IERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
-import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import {Math} from '@openzeppelin/contracts/utils/math/Math.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
+import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+import '@openzeppelin/contracts/utils/math/Math.sol';
+
 import {console} from 'forge-std/console.sol';
+
 /**
  * @title ArtistToken
  * @dev ERC20 token representing an artist's value, with dynamic pricing.
  */
-
 contract ArtistToken is ERC20, Ownable, IArtistToken {
   using Math for uint256;
-  using SafeERC20 for IERC20;
 
   uint256 public override maxSupply; // Maximum supply of the token
   IPriceEngine public priceEngine; // PriceEngine contract for pricing
@@ -50,14 +48,17 @@ contract ArtistToken is ERC20, Ownable, IArtistToken {
    * @param to The recipient's address.
    * @param amount The number of tokens to mint.
    */
-  function mint(address to, uint256 amount) external override {
+  function mint(address to, uint256 amount) external payable override {
     require(totalSupply() + amount <= maxSupply, 'Exceeds max supply');
     uint256 pricePerToken = priceEngine.getPrice(artist);
+    console.log('pricePerToken', pricePerToken);
     uint256 cost = amount.mulDiv(pricePerToken, 1e18);
-    require(IERC20(WGRASS).balanceOf(msg.sender) >= cost, 'Insufficient GHO');
-    IERC20(WGRASS).safeTransferFrom(msg.sender, address(this), cost);
+    console.log('cost', cost);
+    console.log('msg.value', msg.value);
+    require(msg.value >= cost, 'Insufficient GHO');
+
     _mint(to, amount);
-    priceEngine.deposit(cost);
+    priceEngine.depositGHO{value: msg.value}();
     // Note: Metrics are updated externally via updateAllArtists
   }
 
@@ -72,8 +73,8 @@ contract ArtistToken is ERC20, Ownable, IArtistToken {
     uint256 ghoToTransfer = amount.mulDiv(pricePerToken, 1e18);
     require(address(this).balance >= ghoToTransfer, 'Insufficient GHO in contract');
     _burn(from, amount);
-    priceEngine.withdraw(ghoToTransfer);
-    IERC20(WGRASS).safeTransfer(from, ghoToTransfer);
+    priceEngine.withdrawGHO(ghoToTransfer);
+    payable(from).transfer(ghoToTransfer);
     // Note: Metrics are updated externally via updateAllArtists
   }
 

@@ -34,7 +34,7 @@ contract ArtistTokenTest is Test {
     priceEngine.setFactory(address(factory));
 
     vm.prank(owner);
-    priceEngine.deposit(100 ether);
+    priceEngine.depositGHO{value: 100 ether}();
 
     vm.prank(owner);
     token = ArtistToken(factory.createArtistToken('Test Token', 'TST', maxSupply, address(priceEngine), owner));
@@ -60,7 +60,7 @@ contract ArtistTokenTest is Test {
 
     vm.deal(user, cost);
     vm.prank(user);
-    token.mint(user, amount);
+    token.mint{value: cost}(user, amount);
 
     assertEq(token.balanceOf(user), amount);
     assertEq(token.totalSupply(), amount);
@@ -75,7 +75,7 @@ contract ArtistTokenTest is Test {
 
     vm.prank(user);
     vm.expectRevert('Insufficient GHO');
-    token.mint(user, amount);
+    token.mint{value: cost / 2}(user, amount);
   }
 
   function testMintExceedsMaxSupply() public {
@@ -86,7 +86,7 @@ contract ArtistTokenTest is Test {
     vm.deal(user, cost);
     vm.prank(user);
     vm.expectRevert('Exceeds max supply');
-    token.mint(user, amount);
+    token.mint{value: cost}(user, amount);
   }
 
   function testBurn() public {
@@ -96,7 +96,7 @@ contract ArtistTokenTest is Test {
 
     vm.deal(user, cost);
     vm.prank(user);
-    token.mint(user, amount);
+    token.mint{value: cost}(user, amount);
 
     uint256 userBalanceBefore = user.balance;
     vm.prank(user);
@@ -123,11 +123,11 @@ contract ArtistTokenTest is Test {
 
     vm.deal(user, cost);
     vm.prank(user);
-    token.mint(user, amount);
+    token.mint{value: cost}(user, amount);
 
     // Withdraw all GHO from PriceEngine to cause burn failure
     vm.prank(owner);
-    priceEngine.withdraw(100 ether + cost);
+    priceEngine.withdrawGHO(100 ether + cost);
 
     vm.prank(user);
     vm.expectRevert('Insufficient GHO in contract');
@@ -149,7 +149,7 @@ contract ArtistTokenTest is Test {
 
     vm.deal(user, cost);
     vm.prank(user);
-    token.mint(user, amount);
+    token.mint{value: cost}(user, amount);
 
     vm.prank(owner);
     vm.expectRevert('Cannot reduce below current supply');

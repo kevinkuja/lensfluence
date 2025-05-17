@@ -15,9 +15,6 @@ optimizer_runs = 10_000
 via_ir = true
 memory_limit = 43554432
 gas_limit = "18446744073709551615"
-fallback_oz = true
-is_system = false
-mode = "3"
 
 
 [profile.optimized]
