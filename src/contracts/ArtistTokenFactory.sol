@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {APP_OWNER} from '../constants.sol';
 import {IArtistTokenFactory} from '../interfaces/IArtistTokenFactory.sol';
 import {ArtistToken} from './ArtistToken.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 
 /**
  * @title ArtistTokenFactory
@@ -12,9 +13,8 @@ import '@openzeppelin/contracts/access/Ownable.sol';
 contract ArtistTokenFactory is Ownable, IArtistTokenFactory {
   /**
    * @dev Constructor to initialize the contract.
-   * @param initialOwner The initial owner of the contract.
    */
-  constructor(address initialOwner) Ownable(initialOwner) {}
+  constructor() Ownable(APP_OWNER) {}
 
   /**
    * @dev Creates a new ArtistToken contract.
@@ -32,7 +32,6 @@ contract ArtistTokenFactory is Ownable, IArtistTokenFactory {
     address priceEngine,
     address artist
   ) external override onlyOwner returns (address) {
-    require(maxSupply <= 1_000_000, 'Supply too high');
     require(artist != address(0), 'Invalid artist address');
     require(artistToToken[artist] == address(0), 'Token already exists');
 

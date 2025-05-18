@@ -37,18 +37,20 @@ contract ArtistToken is ERC20, Ownable, IArtistToken {
     address _artist,
     address initialOwner
   ) ERC20(name, symbol) Ownable(initialOwner) {
-    require(_maxSupply <= 1_000_000, 'Supply too high');
     maxSupply = _maxSupply;
     priceEngine = IPriceEngine(_priceEngine);
     artist = _artist;
   }
 
+  receive() external payable {}
   /**
    * @dev Mints tokens to a recipient, requiring GHO payment.
    * @param to The recipient's address.
    * @param amount The number of tokens to mint.
    */
+
   function mint(address to, uint256 amount) external payable override {
+    console.log('artist', artist);
     require(totalSupply() + amount <= maxSupply, 'Exceeds max supply');
     uint256 pricePerToken = priceEngine.getPrice(artist);
     console.log('pricePerToken', pricePerToken);
@@ -71,7 +73,6 @@ contract ArtistToken is ERC20, Ownable, IArtistToken {
     require(balanceOf(from) >= amount, 'Insufficient balance');
     uint256 pricePerToken = priceEngine.getPrice(artist);
     uint256 ghoToTransfer = amount.mulDiv(pricePerToken, 1e18);
-    require(address(this).balance >= ghoToTransfer, 'Insufficient GHO in contract');
     _burn(from, amount);
     priceEngine.withdrawGHO(ghoToTransfer);
     payable(from).transfer(ghoToTransfer);
@@ -84,7 +85,6 @@ contract ArtistToken is ERC20, Ownable, IArtistToken {
    */
   function setMaxSupply(uint256 newMaxSupply) external override onlyOwner {
     require(newMaxSupply >= totalSupply(), 'Cannot reduce below current supply');
-    require(newMaxSupply <= 10_000_000, 'New supply too high');
     maxSupply = newMaxSupply;
     emit MaxSupplyUpdated(newMaxSupply);
   }

@@ -4,12 +4,12 @@ pragma solidity ^0.8.20;
 import {IArtistToken} from '../interfaces/IArtistToken.sol';
 import {IArtistTokenFactory} from '../interfaces/IArtistTokenFactory.sol';
 
+import {APP_OWNER} from '../constants.sol';
 import {IMockYieldPlatform} from '../interfaces/IMockYieldPlatform.sol';
 import {IPriceEngine} from '../interfaces/IPriceEngine.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/utils/math/Math.sol';
-
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Math} from '@openzeppelin/contracts/utils/math/Math.sol';
 import {console} from 'forge-std/console.sol';
 
 /**
@@ -29,14 +29,15 @@ contract PriceEngine is Ownable, IPriceEngine {
   mapping(address => uint256) public artistPrices; // Stored price per token for each artist (wei)
 
   uint256 public constant MAX_SI = 10e18; // Maximum Success Index (10x)
-
+  address public constant YIELD_PLATFORM = 0xe1d0F7083DE5612F11565b1D60D9060938441628;
+  address public constant FACTORY = 0x217410571B9c660874C00b9B73489010A0c8344c;
   /**
    * @dev Constructor to initialize the contract.
-   * @param _yieldPlatform Address of the MockYieldPlatform contract.
-   * @param initialOwner The initial owner of the contract.
    */
-  constructor(address _yieldPlatform, address initialOwner) Ownable(initialOwner) {
-    yieldPlatform = IMockYieldPlatform(_yieldPlatform);
+
+  constructor() Ownable(APP_OWNER) {
+    yieldPlatform = IMockYieldPlatform(YIELD_PLATFORM);
+    factory = IArtistTokenFactory(FACTORY);
     treasuryGHO = 0;
     releasedLiquidity = 0;
   }
@@ -56,15 +57,17 @@ contract PriceEngine is Ownable, IPriceEngine {
   function depositGHO() external payable override {
     yieldPlatform.depositGHO{value: msg.value}();
     treasuryGHO += msg.value;
+    emit GHODeposited(msg.value);
   }
 
   /**
    * @dev Withdraws GHO from the yield platform and updates the treasury.
    * @param amount The amount to withdraw (wei).
    */
-  function withdrawGHO(uint256 amount) external override onlyOwner {
+  function withdrawGHO(uint256 amount) external override {
     yieldPlatform.withdrawGHO(amount);
     treasuryGHO -= amount;
+    emit GHOWithdrawn(amount);
   }
 
   /**
@@ -89,7 +92,7 @@ contract PriceEngine is Ownable, IPriceEngine {
    * @return The price per token (wei).
    */
   function getPrice(address artist) external view override returns (uint256) {
-    return artistPrices[artist];
+    return artistPrices[artist] == 0 ? 1e18 : artistPrices[artist];
   }
 
   /**
@@ -187,6 +190,7 @@ contract PriceEngine is Ownable, IPriceEngine {
       releasedLiquidity = availableLiquidity;
       console.log('releasedLiquidity', releasedLiquidity);
     }
+    emit AllArtistsUpdated(newPrices, availableLiquidity, treasuryGHO);
   }
   /**
    * @dev Sets initial metrics for an artist.
@@ -195,7 +199,6 @@ contract PriceEngine is Ownable, IPriceEngine {
    */
 
   function setMetrics(address artist, uint256 metric) external onlyOwner {
-    require(metric <= 1_000_000_000, 'Metric too high');
     prevRawValues[artist] = 1e18;
     prevMetrics[artist] = metric;
     artistPrices[artist] = 1e18; // Initial price

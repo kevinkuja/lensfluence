@@ -33,4 +33,4 @@ runs = 1000
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC}"
 sepolia = "${SEPOLIA_RPC}"
-lens = "https://rpc.testnet.lens.xyz"
+lens = "https://lens-mainnet.g.alchemy.com/v2/nX-ygP53hqHvxipRiWonF1twv26q5a6p"

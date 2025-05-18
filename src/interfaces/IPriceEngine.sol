@@ -6,9 +6,13 @@ pragma solidity ^0.8.20;
  * @dev Interface for the PriceEngine contract, managing token prices and metrics.
  */
 interface IPriceEngine {
+  event GHODeposited(uint256 amount);
+  event GHOWithdrawn(uint256 amount);
+  event AllArtistsUpdated(uint256[] newPrices, uint256 availableLiquidity, uint256 treasuryGHO);
   /**
    * @dev Deposits GHO into the yield platform.
    */
+
   function depositGHO() external payable;
 
   /**

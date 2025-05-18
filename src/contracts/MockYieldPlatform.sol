@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import {APP_OWNER} from '../constants.sol';
 import {IMockYieldPlatform} from '../interfaces/IMockYieldPlatform.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 
@@ -14,9 +15,8 @@ contract MockYieldPlatform is Ownable, IMockYieldPlatform {
 
   /**
    * @dev Constructor to initialize the contract.
-   * @param initialOwner The initial owner of the contract.
    */
-  constructor(address initialOwner) Ownable(initialOwner) {}
+  constructor() Ownable(APP_OWNER) {}
 
   /**
    * @dev Deposits GHO into the platform.

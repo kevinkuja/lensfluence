@@ -28,7 +28,7 @@ contract BuyArtistTokenAction is BaseAccountAction {
     address artistToken = abi.decode(params[0].value, (address));
     uint256 amount = abi.decode(params[1].value, (uint256));
 
-    ArtistToken(artistToken).mint(originalMsgSender, amount);
+    ArtistToken(payable(artistToken)).mint(originalMsgSender, amount);
     return '';
   }
 
