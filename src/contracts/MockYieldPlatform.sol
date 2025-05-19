@@ -3,7 +3,8 @@ pragma solidity ^0.8.20;
 
 import {APP_OWNER} from '../constants.sol';
 import {IMockYieldPlatform} from '../interfaces/IMockYieldPlatform.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {console} from 'forge-std/console.sol';
 
 /**
  * @title MockYieldPlatform
@@ -18,6 +19,8 @@ contract MockYieldPlatform is Ownable, IMockYieldPlatform {
    */
   constructor() Ownable(APP_OWNER) {}
 
+  receive() external payable {}
+
   /**
    * @dev Deposits GHO into the platform.
    */
@@ -31,9 +34,12 @@ contract MockYieldPlatform is Ownable, IMockYieldPlatform {
    * @param amount The amount to withdraw (wei).
    */
   function withdrawGHO(uint256 amount) external override {
+    console.log('withdrawing from MockYieldPlatform', amount);
+    console.log('mock balance before', address(this).balance);
     require(balances[msg.sender] >= amount, 'Insufficient balance');
     balances[msg.sender] = balances[msg.sender] - amount;
     payable(msg.sender).transfer(amount);
+    console.log('mock balance after', address(this).balance);
   }
 
   /**

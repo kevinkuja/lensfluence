@@ -1,175 +1,102 @@
-<img src="https://raw.githubusercontent.com/defi-wonderland/brand/v1.0.0/external/solidity-foundry-boilerplate-banner.png" alt="wonderland banner" align="center" />
-<br />
+# Day One Smart Contracts
 
-<div align="center"><strong>Start your next Solidity project with Foundry in seconds</strong></div>
-<div align="center">A highly scalable foundation focused on DX and best practices</div>
+---
 
-<br />
+## 🚀 Overview
 
-## Features
+Day One allows artists to tokenize their growth metrics as ERC-20 tokens, and fans to buy, sell and follow based on those tokens. This frontend provides:
 
-<dl>
-  <dt>Sample contracts</dt>
-  <dd>Basic Greeter contract with an external interface.</dd>
+- Full integration with Lens Protocol primitives: accounts, follows, token‐gated follow rules, and metadata.
+- A simple marketplace: mint and burn ArtistTokens by sending GHO to the artist's Lens Account.
 
-  <dt>Foundry setup</dt>
-  <dd>Foundry configuration with multiple custom profiles and remappings.</dd>
+---
 
-  <dt>Deployment scripts</dt>
-  <dd>Sample scripts to deploy contracts on both mainnet and testnet.</dd>
+## 🔧 Key Primitives
 
-  <dt>Sample Integration, Unit, Property-based fuzzed and symbolic tests</dt>
-  <dd>Example tests showcasing mocking, assertions and configuration for mainnet forking. As well it includes everything needed in order to check code coverage.</dd>
-  <dd>Unit tests are built based on the <a href="https://twitter.com/PaulRBerg/status/1682346315806539776">Branched-Tree Technique</a>, using <a href="https://github.com/alexfertel/bulloak">Bulloak</a>.
-  <dd>Formal verification and property-based fuzzing are achieved with <a href="https://github.com/a16z/halmos">Halmos</a> and <a href="https://github.com/crytic/medusa">Medusa</a> (resp.).
+1. **Lens Accounts**
 
-  <dt>Linter</dt>
-  <dd>Simple and fast solidity linting thanks to forge fmt.</dd>
-  <dd>Find missing natspec automatically.</dd>
+   - Every user and artist has a Lens Account.
+   - Buying/selling tokens happens _from_ and _to_ these Accounts.
+   - Artist profiles (avatar, username, bio, etc.) live in the Account metadata, along with a `token` attribute pointing to their ERC-20 address.
 
-  <dt>Github workflows CI</dt>
-  <dd>Run all tests and see the coverage as you push your changes.</dd>
-  <dd>Export your Solidity interfaces and contracts as packages, and publish them to NPM.</dd>
-</dl>
+2. **Follow & Token-Gated Follow Rule**
 
-## Setup
+   - We wire up Lens' **TokenGatedGraphRule** so that **only holders** of ≥ 1 ArtistToken can follow that artist's profile.
+   - Follows are executed _on your custom Graph_ using the Lens SDK.
 
-1. Install Foundry by following the instructions from [their repository](https://github.com/foundry-rs/foundry#installation).
-2. Copy the `.env.example` file to `.env` and fill in the variables.
-3. Install rust dependencies: `cargo install lintspec`
-4. Install the dependencies by running: `yarn install`. In case there is an error with the commands, run `foundryup` and try them again.
+3. **ArtistToken in Metadata**
+   - Each artist's Lens Account metadata includes a `token` attribute (the ERC-20 address).
+   - Frontend reads this to drive buy/sell and follow gating.
 
-## Build
+---
 
-The default way to build the code is suboptimal but fast, you can run it via:
+## 🛠️ Web3 Tech Stack
 
-```bash
-yarn build
-```
+- **ConnectKit + Family + Wagmi** — Wallet connection UI & hooks
+- **@lens-protocol** — Lens SDK for auth, account creation, follows, Graph & actions
+- **viem** — Low-level Ethereum primitives
 
-In order to build a more optimized code ([via IR](https://docs.soliditylang.org/en/v0.8.15/ir-breaking-changes.html#solidity-ir-based-codegen-changes)), run:
+---
 
-```bash
-yarn build:optimized
-```
+## 📦 Getting Started
 
-## Running tests
+1. **Install dependencies**
 
-Unit tests should be isolated from any externalities, while Integration usually run in a fork of the blockchain. In this boilerplate you will find example of both.
+   ```bash
+   yarn install
+   ```
 
-In order to run both unit and integration tests, run:
+2 ** Deploy smart contracts*
+   ```bash
+   forge create ...
+   ```
 
-```bash
-yarn test
-```
+---
 
-In order to just run unit tests, run:
+## 🌐 Deployments
 
-```bash
-yarn test:unit
-```
+| Component           | Address                                      |
+| ------------------- | -------------------------------------------- |
+| **Token Factory**   | `0xd92b0FC2c414BD4484ffaC0F6b89BAe85aabDD43` |
+| **Price Engine**    | `0x8Aa88f77B0828b1881f4eb5c4FF9B25679A30CE4` |
+| **Artist Accounts** |                                              |
+| DOECHII             | `0x32cB946b47e36bc2c35E8Fa9571656216f35C5f6` |
+| DAVINCI             | `0x85E2079d2F69407dD86B3D871329b382153Bb595` |
+| **Artist Tokens**   |                                              |
+| DOECHII             | `0x94317bB1Bf44cAd9719BbA91fdeb7dcF2aaE34b3` |
+| DAVINCI             | `0x8AbFa9E9aa3531B976e9F078524eb402c981fE5D` |
+| **Actions**         |                                              |
+| Buy Artist Token    | `0xDa5e635C89dF6e207d167E2311024dA7e4831654` |
+| Sell Artist Token   | `0xd75Bf44D044891bF65ecaba47ED65df903124F7B` |
 
-In order to run unit tests and run way more fuzzing than usual (5x), run:
+---
 
-```bash
-yarn test:unit:deep
-```
+## 💡 Feedback & Improvements
 
-In order to just run integration tests, run:
+During development we explored Lens' **Custom Account Actions** for Buy & Sell flows:
 
-```bash
-yarn test:integration
-```
+- **Action approach**: Deploy `BuyArtistTokenAction` & `SellArtistTokenAction`, add them as managers on artist Accounts, and have each user execute them.
+- **Blocker 1**: The Lens SDK currently does **not** support sending a custom `value` (GHO) in Account Actions the same way as native ETH in other EVMs.
+  _Discussed on Discord:_
+  [https://discord.com/channels/918178320682733648/1372008378351747172](https://discord.com/channels/918178320682733648/1372008378351747172)
+- **Blocker 2**: Adding a custom action caused Lens' GraphQL API to return **502 errors**, making that Account unusable.
+  _Bug report & follow-up:_
+  [https://discord.com/channels/918178320682733648/1373051686427557978](https://discord.com/channels/918178320682733648/1373051686427557978)
 
-In order to start the Medusa fuzzing campaign (requires [Medusa](https://github.com/crytic/medusa/blob/master/docs/src/getting_started/installation.md) installed), run:
+**Workaround**: We fell back to a hybrid model:
 
-```bash
-yarn test:fuzz
-```
+- Use Lens SDK for account creation, authentication, follows & graph operations (works flawlessly).
+- For mint/burn of ArtistTokens, we build raw transactions from our EOA to the user's smart account, that points to the ERC-20 ArtistToken.
 
-In order to just run the symbolic execution tests (requires [Halmos](https://github.com/a16z/halmos/blob/main/README.md#installation) installed), run:
+⚙️ **Next steps**:
 
-```bash
-yarn test:symbolic
-```
+- Migrate back to a pure Account Actions approach once:
 
-In order to check your current code coverage, run:
+  1. Lens SDK supports custom `value` in Account Actions.
+  2. The GraphQL 502 bug is resolved (Done).
 
-```bash
-yarn coverage
-```
+We love Lens' extensibility—these improvements would unlock a truly seamless, signless UX for Day One's token marketplace!
 
-<br>
+---
 
-## Deploy & verify
-
-### Setup
-
-Configure the `.env` variables and source them:
-
-```bash
-source .env
-```
-
-Import your private keys into Foundry's encrypted keystore:
-
-```bash
-cast wallet import $MAINNET_DEPLOYER_NAME --interactive
-```
-
-```bash
-cast wallet import $SEPOLIA_DEPLOYER_NAME --interactive
-```
-
-### Sepolia
-
-```bash
-yarn deploy:sepolia
-```
-
-### Mainnet
-
-```bash
-yarn deploy:mainnet
-```
-
-The deployments are stored in ./broadcast
-
-See the [Foundry Book for available options](https://book.getfoundry.sh/reference/forge/forge-create.html).
-
-## Export And Publish
-
-Export TypeScript interfaces from Solidity contracts and interfaces providing compatibility with TypeChain. Publish the exported packages to NPM.
-
-To enable this feature, make sure you've set the `NPM_TOKEN` on your org's secrets. Then set the job's conditional to `true`:
-
-```yaml
-jobs:
-  export:
-    name: Generate Interfaces And Contracts
-    # Remove the following line if you wish to export your Solidity contracts and interfaces and publish them to NPM
-    if: true
-    ...
-```
-
-Also, remember to update the `package_name` param to your package name:
-
-```yaml
-- name: Export Solidity - ${{ matrix.export_type }}
-  uses: defi-wonderland/solidity-exporter-action@1dbf5371c260add4a354e7a8d3467e5d3b9580b8
-  with:
-    # Update package_name with your package name
-    package_name: "my-cool-project"
-    ...
-
-
-- name: Publish to NPM - ${{ matrix.export_type }}
-  # Update `my-cool-project` with your package name
-  run: cd export/my-cool-project-${{ matrix.export_type }} && npm publish --access public
-  ...
-```
-
-You can take a look at our [solidity-exporter-action](https://github.com/defi-wonderland/solidity-exporter-action) repository for more information and usage examples.
-
-## Licensing
-The primary license for the boilerplate is MIT, see [`LICENSE`](https://github.com/defi-wonderland/solidity-foundry-boilerplate/blob/main/LICENSE)
+> Day One is an experimental platform. Feedback and contributions welcome!

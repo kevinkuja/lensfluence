@@ -72,9 +72,15 @@ contract ArtistToken is ERC20, Ownable, IArtistToken {
   function burn(address from, uint256 amount) external override {
     require(balanceOf(from) >= amount, 'Insufficient balance');
     uint256 pricePerToken = priceEngine.getPrice(artist);
+    console.log('pricePerToken', pricePerToken);
     uint256 ghoToTransfer = amount.mulDiv(pricePerToken, 1e18);
+    console.log('ghoToTransfer', ghoToTransfer);
     _burn(from, amount);
+    console.log('burning', amount);
     priceEngine.withdrawGHO(ghoToTransfer);
+    console.log('transferring', ghoToTransfer);
+    console.log('artist token', address(this));
+    console.log('artist token balance', address(this).balance);
     payable(from).transfer(ghoToTransfer);
     // Note: Metrics are updated externally via updateAllArtists
   }

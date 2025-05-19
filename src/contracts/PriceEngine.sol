@@ -29,8 +29,8 @@ contract PriceEngine is Ownable, IPriceEngine {
   mapping(address => uint256) public artistPrices; // Stored price per token for each artist (wei)
 
   uint256 public constant MAX_SI = 10e18; // Maximum Success Index (10x)
-  address public constant YIELD_PLATFORM = 0xe1d0F7083DE5612F11565b1D60D9060938441628;
-  address public constant FACTORY = 0x217410571B9c660874C00b9B73489010A0c8344c;
+  address public constant YIELD_PLATFORM = 0x2eA7e1e89E33573B65e2aa0aa8864d6b7f04dB99;
+  address public constant FACTORY = 0xE9a4729944290F24D45557A72BD3228Ed391fa5B;
   /**
    * @dev Constructor to initialize the contract.
    */
@@ -41,6 +41,8 @@ contract PriceEngine is Ownable, IPriceEngine {
     treasuryGHO = 0;
     releasedLiquidity = 0;
   }
+
+  receive() external payable {}
 
   /**
    * @dev Sets the ArtistTokenFactory contract address.
@@ -65,8 +67,12 @@ contract PriceEngine is Ownable, IPriceEngine {
    * @param amount The amount to withdraw (wei).
    */
   function withdrawGHO(uint256 amount) external override {
+    console.log('withdrawing from PriceEngine', amount);
     yieldPlatform.withdrawGHO(amount);
+    console.log('treasuryGHO', treasuryGHO);
     treasuryGHO -= amount;
+    console.log('treasuryGHO', treasuryGHO);
+    payable(msg.sender).transfer(amount);
     emit GHOWithdrawn(amount);
   }
 
